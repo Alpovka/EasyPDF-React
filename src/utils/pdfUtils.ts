@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas-pro";
 import { PDFConfig } from "../types/config";
-import { defaultConfig } from "./defaultConfig";
+import { defaultConfig } from "../types/defaultConfig";
 import handleAutoBreak from "./handlePageBreak";
 
 export const createTempElement = (): HTMLDivElement => {
@@ -32,23 +32,24 @@ export const applyStyles = (
   element: HTMLElement,
   styles: PDFConfig["styles"]
 ) => {
-  if (!styles) return;
+  const mergedStyles = { ...defaultConfig.styles, ...styles };
+  if (!mergedStyles) return;
 
-  if (styles.backgroundColor) {
-    element.style.backgroundColor = styles.backgroundColor;
+  if (mergedStyles.backgroundColor) {
+    element.style.backgroundColor = mergedStyles.backgroundColor;
   }
-  if (styles.defaultFontSize) {
-    element.style.fontSize = `${styles.defaultFontSize}px`;
+  if (mergedStyles.defaultFontSize) {
+    element.style.fontSize = `${mergedStyles.defaultFontSize}px`;
   }
-  if (styles.defaultFontFamily) {
-    element.style.fontFamily = styles.defaultFontFamily;
+  if (mergedStyles.defaultFontFamily) {
+    element.style.fontFamily = mergedStyles.defaultFontFamily;
   }
-  if (styles.defaultTextColor) {
-    element.style.color = styles.defaultTextColor;
+  if (mergedStyles.defaultTextColor) {
+    element.style.color = mergedStyles.defaultTextColor;
   }
-  if (styles.customCSS) {
+  if (mergedStyles.customCSS) {
     const styleElement = document.createElement("style");
-    styleElement.textContent = styles.customCSS;
+    styleElement.textContent = mergedStyles.customCSS;
     element.appendChild(styleElement);
   }
 };
@@ -143,6 +144,86 @@ export const addWatermark = (
   pdf.restoreGraphicsState();
 };
 
+export const addHeader = (
+  pdf: jsPDF,
+  headerConfig: PDFConfig["header"],
+  margins: PDFConfig["margins"],
+  pageNumber: number,
+  totalPages: number
+) => {
+  if (!headerConfig?.text) return;
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  pdf.setFontSize(headerConfig.fontSize || 12);
+  pdf.setTextColor(headerConfig.fontColor || "#000000");
+
+  const y = Math.min(margins?.top ?? 0, headerConfig.marginTop ?? 0);
+
+  // Always use the center of the page width for x coordinate
+  const x =
+    headerConfig.align === "center"
+      ? pageWidth / 2
+      : headerConfig.align === "right"
+      ? pageWidth - (margins?.right ?? 0) - (headerConfig.marginRight ?? 0)
+      : (margins?.left ?? 0) + (headerConfig.marginLeft ?? 0);
+
+  // Replace placeholders with actual page numbers
+  const text =
+    typeof headerConfig.text === "string"
+      ? headerConfig.text
+          .replace(/{pageNumber}/g, pageNumber.toString())
+          .replace(/{totalPages}/g, totalPages.toString())
+      : headerConfig.text;
+
+  // Force center alignment
+  pdf.text(text, x, y, {
+    align: "center",
+    baseline: "alphabetic",
+  });
+};
+
+export const addFooter = (
+  pdf: jsPDF,
+  footerConfig: PDFConfig["footer"],
+  margins: { top: number; right: number; bottom: number; left: number },
+  pageNumber: number,
+  totalPages: number
+) => {
+  if (!footerConfig?.text) return;
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  pdf.setFontSize(footerConfig.fontSize || 12);
+  pdf.setTextColor(footerConfig.fontColor || "#000000");
+
+  const y = Math.max(
+    pageHeight - (margins?.bottom ?? 0),
+    pageHeight - (footerConfig.marginBottom ?? 0)
+  );
+
+  // Always use the center of the page width for x coordinate
+  const x =
+    footerConfig.align === "center"
+      ? pageWidth / 2
+      : footerConfig.align === "right"
+      ? pageWidth - (margins?.right ?? 0) - (footerConfig.marginRight ?? 0)
+      : (margins?.left ?? 0) + (footerConfig.marginLeft ?? 0);
+
+  // Replace placeholders with actual page numbers
+  const text =
+    typeof footerConfig.text === "string"
+      ? footerConfig.text
+          .replace(/{pageNumber}/g, pageNumber.toString())
+          .replace(/{totalPages}/g, totalPages.toString())
+      : footerConfig.text;
+
+  // Force center alignment
+  pdf.text(text, x, y, {
+    align: "center",
+    baseline: "alphabetic",
+  });
+};
+
 export const generatePDFFromElement = async (
   element: HTMLElement,
   pdfConfig: PDFConfig
@@ -177,7 +258,7 @@ export const generatePDFFromElement = async (
   const contentWidth = pageWidth - (margins.left + margins.right);
 
   const mainCanvas = await html2canvas(element as HTMLElement, {
-    scale: mergedConfig.scale ?? 2,
+    scale: mergedConfig.scale,
     useCORS: true,
     logging: false,
     backgroundColor: mergedConfig.styles?.backgroundColor ?? "#ffffff",
@@ -242,6 +323,21 @@ export const generatePDFFromElement = async (
     sourceY += pageContentHeight / scale;
     remainingHeight -= pageContentHeight;
     currentPage++;
+  }
+
+  if (mergedConfig.header?.text) {
+    for (let i = 1; i <= currentPage - 1; i++) {
+      pdf.setPage(i);
+      addHeader(pdf, mergedConfig.header, margins, i, currentPage - 1);
+    }
+  }
+
+  if (mergedConfig.footer?.text) {
+    const totalPages = currentPage - 1;
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+      addFooter(pdf, mergedConfig.footer, margins, i, totalPages);
+    }
   }
 
   // Add watermark if configured

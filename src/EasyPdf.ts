@@ -1,6 +1,6 @@
-import { PDFConfig } from "../types/config";
-import { defaultConfig } from "./defaultConfig";
-import { validateLicense } from "./license";
+import { PDFConfig } from "./types/config";
+import { defaultConfig } from "./types/defaultConfig";
+import { validateLicense } from "./utils/license";
 
 export class EasyPdf {
   private static instance: EasyPdf | null = null;

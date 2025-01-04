@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { EasyPdf } from "./utils/EasyPdf";
+import { EasyPdf } from "./EasyPdf";
 
 interface EasyPdfContextType {
   instance: EasyPdf;

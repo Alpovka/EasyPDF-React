@@ -5,7 +5,6 @@ const handleAutoBreak = (
   element: HTMLElement,
   mainCanvas: HTMLCanvasElement
 ): number => {
-  console.log("proposedHeight", proposedHeight);
   let adjustedHeight = proposedHeight;
 
   // Get all elements that should not break

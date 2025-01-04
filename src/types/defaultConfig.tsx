@@ -5,7 +5,7 @@ export const defaultConfig: PDFConfig = {
   pageSize: "A4",
   orientation: "portrait",
   margins: {
-    top: 20,
+    top: 30,
     right: 20,
     bottom: 20,
     left: 20,
@@ -25,6 +25,22 @@ export const defaultConfig: PDFConfig = {
 
   // Export Options
   scale: 2,
+
+  footer: {
+    text: `Page {pageNumber} of {totalPages}`,
+    marginBottom: 10,
+    marginLeft: 20,
+    marginRight: 20,
+    align: "center",
+  },
+
+  header: {
+    text: `Page {pageNumber} of {totalPages}`,
+    marginTop: 10,
+    marginLeft: 20,
+    marginRight: 20,
+    align: "center",
+  },
 
   // Enhanced Styling
   styles: {

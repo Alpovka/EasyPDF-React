@@ -52,6 +52,26 @@ export interface PDFConfig {
     customCSS?: string;
   };
 
+  // Header and Footer
+  header?: {
+    text: string | string[];
+    fontSize?: number;
+    fontColor?: string;
+    marginTop?: number | 0;
+    marginLeft?: number | 0;
+    marginRight?: number | 0;
+    align?: "left" | "center" | "right";
+  };
+  footer?: {
+    text: string | string[];
+    fontSize?: number;
+    fontColor?: string;
+    marginBottom?: number | 0;
+    marginLeft?: number | 0;
+    marginRight?: number | 0;
+    align?: "left" | "center" | "right";
+  };
+
   container?: {
     className?: string;
     style?: React.CSSProperties;
