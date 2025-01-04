@@ -50,23 +50,19 @@ import React from "react";
 import { useEasyPdf } from "@easypdf/react";
 
 const PDFGenerator = () => {
-  const { pdfRef, downloadPDF, isDownloadingPDF } = useEasyPdf();
+  const { pdfRef, downloadPDF, isDownloadingPDF, error } = useEasyPdf();
 
-  const handleDownload = async () => {
-    try {
-      await downloadPDF(pdfRef, {
-        filename: "example.pdf",
-      });
-    } catch (error) {
-      console.error("Failed to generate PDF:", error);
-    }
-  };
+  const handleDownload = async () =>
+    await downloadPDF(pdfRef, {
+      filename: "example.pdf",
+    });
 
   return (
     <div>
       <button onClick={handleDownload} disabled={isDownloadingPDF}>
         {isDownloadingPDF ? "Generating..." : "Download PDF"}
       </button>
+      {error ? <p>error.message</p> : null}
 
       {/* Content container with pdfRef */}
       <div ref={pdfRef}>
