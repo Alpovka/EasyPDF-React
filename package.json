@@ -47,10 +47,10 @@
   "licenseText": "Dual license: Personal ($15) or Commercial ($99). See LICENSE file for details.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/easypdf"
+    "url": "https://github.com/Alpovka/EasyPDF-React"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/easypdf/issues"
+    "url": "https://github.com/Alpovka/EasyPDF-React/issues"
   },
   "homepage": "https://github.com/yourusername/easypdf#readme",
   "publishConfig": {
