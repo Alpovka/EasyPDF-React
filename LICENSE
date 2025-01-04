@@ -1,0 +1,48 @@
+EasyPDF React License
+
+Copyright (c) 2025 EasyPDF-React
+
+Terms and Conditions:
+
+1. License Types:
+
+   a) Personal License ($15):
+
+   - Usage allowed on up to 3 domains
+   - Includes localhost for development
+   - Includes lifetime updates
+   - For individual developers and personal projects only
+
+   b) Commercial License ($99):
+
+   - Usage allowed on up to 12 domains
+   - Includes localhost for development
+   - Includes lifetime updates
+   - Commercial use rights
+   - Priority email support
+   - For business and commercial applications
+
+2. General Terms:
+
+   - Each unique domain or subdomain counts as one domain
+   - Localhost usage is included and doesn't count towards domain limits
+   - The license includes lifetime access to the library and future updates
+   - Redistribution of the source code is not permitted
+   - Modification of the source code is allowed for personal/internal use only
+
+3. Domain Management:
+
+   - Domains can be changed through the license management system
+   - Must stay within the licensed domain limit
+   - Additional licenses can be purchased for more domains
+
+4. Support:
+
+   - Commercial license includes priority email support
+   - Documentation and basic support available for all users
+
+5. Updates:
+   - All licenses include lifetime updates
+   - Access to all minor and major version updates
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

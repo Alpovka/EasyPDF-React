@@ -1,16 +1,20 @@
 {
-  "name": "easypdf",
+  "name": "@easypdf/react",
   "version": "1.0.0",
+  "description": "React PDF Generation Made Simple",
   "type": "module",
   "main": "dist/easypdf.umd.js",
   "module": "dist/easypdf.es.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "logo.svg",
+    "LICENSE"
   ],
   "scripts": {
     "build": "vite build",
-    "dev": "vite build --watch"
+    "dev": "vite build --watch",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "react": "^18.2.0",
@@ -28,5 +32,28 @@
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
     "vite-plugin-dts": "^4.4.0"
+  },
+  "keywords": [
+    "react",
+    "pdf",
+    "generator",
+    "typescript",
+    "html-to-pdf",
+    "react-pdf",
+    "html2canvas"
+  ],
+  "author": "Your Name",
+  "license": "SEE LICENSE IN LICENSE",
+  "licenseText": "Dual license: Personal ($15) or Commercial ($99). See LICENSE file for details.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/easypdf"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/easypdf/issues"
+  },
+  "homepage": "https://github.com/yourusername/easypdf#readme",
+  "publishConfig": {
+    "access": "public"
   }
 }

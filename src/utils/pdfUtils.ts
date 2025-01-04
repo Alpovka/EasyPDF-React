@@ -4,27 +4,7 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas-pro";
 import { PDFConfig } from "../types/config";
 import { defaultConfig } from "./defaultConfig";
-import { EasyPdfInstance } from "../utils/instance";
 import handleAutoBreak from "./handlePageBreak";
-
-// Validation Check
-export interface ValidationCheckProps {
-  instance: EasyPdfInstance;
-  mode: "return" | "throw";
-}
-export const validationCheck = ({ instance, mode }: ValidationCheckProps) => {
-  if (!instance.isValidated) {
-    if (mode === "throw") {
-      throw new Error(
-        "EasyPDF: Invalid license - PDF operations are not allowed"
-      );
-    }
-    return new Error(
-      "EasyPDF: Invalid license - PDF operations are not allowed"
-    );
-  }
-  return null;
-};
 
 export const createTempElement = (): HTMLDivElement => {
   const tempDiv = document.createElement("div");

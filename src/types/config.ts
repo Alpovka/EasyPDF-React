@@ -52,13 +52,6 @@ export interface PDFConfig {
     customCSS?: string;
   };
 
-  pageBreaks?: {
-    mode: "auto" | "manual" | "both";
-    autoBreakHeight?: number;
-    avoidBreakInside?: string[];
-    manualBreakClass?: string;
-  };
-
   container?: {
     className?: string;
     style?: React.CSSProperties;

@@ -6,7 +6,6 @@ import {
   renderContent,
   applyStyles,
   generatePDFFromElement,
-  validationCheck,
 } from "./utils/pdfUtils";
 
 export const useEasyPdf = (initialConfig?: PDFConfig) => {
@@ -15,9 +14,18 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isCreatingBlob, setIsCreatingBlob] = useState(false);
-  const [error, setError] = useState<Error | null>(
-    validationCheck({ instance, mode: "return" })
-  );
+  const [error, setError] = useState<Error | null>(null);
+
+  // Validation check helper
+  const checkValidation = useCallback(() => {
+    if (!instance.getValidationStatus()) {
+      const error = new Error(
+        "EasyPDF: Invalid license - PDF operations are not allowed"
+      );
+      setError(error);
+      throw error;
+    }
+  }, [instance]);
 
   const downloadPDF = useCallback(
     async (
@@ -25,14 +33,14 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
       config?: PDFConfig
     ) => {
       const mergedConfig = {
-        ...instance.config,
+        ...instance.getConfig(),
         ...initialConfig,
         ...config,
       };
       try {
         setIsDownloadingPDF(true);
         setError(null);
-        validationCheck;
+        checkValidation();
         if (!refOrBlob) {
           throw new Error("PDF reference or blob not found");
         }
@@ -55,7 +63,6 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
           if (!element) {
             throw new Error("PDF container not found");
           }
-          console.log("element", element);
           const pdf = await generatePDFFromElement(element, mergedConfig);
           blob = pdf.output("blob");
         }
@@ -77,19 +84,19 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         setIsDownloadingPDF(false);
       }
     },
-    [instance.config, initialConfig]
+    [instance, initialConfig, checkValidation]
   );
 
   const createPDF = useCallback(
     async (content: React.ReactNode, config?: PDFConfig) => {
-      validationCheck({ instance, mode: "throw" });
       const tempDiv = createTempElement();
       try {
         setIsGeneratingPDF(true);
         setError(null);
+        checkValidation();
         await renderContent(tempDiv, content);
         const mergedConfig = {
-          ...instance.config,
+          ...instance.getConfig(),
           ...initialConfig,
           ...config,
         };
@@ -108,19 +115,19 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         document.body.removeChild(tempDiv);
       }
     },
-    [instance.config, initialConfig]
+    [instance, initialConfig, checkValidation]
   );
 
   const createPDFBlob = useCallback(
     async (content: React.ReactNode, config?: PDFConfig): Promise<Blob> => {
       const tempDiv = createTempElement();
-      validationCheck({ instance, mode: "throw" });
       try {
         setIsCreatingBlob(true);
         setError(null);
+        checkValidation();
         await renderContent(tempDiv, content);
         const mergedConfig = {
-          ...instance.config,
+          ...instance.getConfig(),
           ...initialConfig,
           ...config,
         };
@@ -139,13 +146,13 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         document.body.removeChild(tempDiv);
       }
     },
-    [instance.config, initialConfig]
+    [instance, initialConfig, checkValidation]
   );
 
   const viewPDF = useCallback(
     async (content: React.ReactNode | Blob, config?: PDFConfig) => {
-      validationCheck({ instance, mode: "throw" });
       try {
+        checkValidation();
         let blob: Blob;
         if (content instanceof Blob) {
           blob = content;
@@ -162,7 +169,7 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         throw error;
       }
     },
-    [createPDFBlob]
+    [createPDFBlob, checkValidation]
   );
 
   return {

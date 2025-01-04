@@ -1,0 +1,34 @@
+# Source
+src/
+
+# Development
+node_modules/
+.git/
+.gitignore
+.env
+.env.*
+
+# Build tools
+vite.config.ts
+tsconfig.json
+
+# IDE
+.vscode/
+.idea/
+
+# Tests
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Misc
+.DS_Store
+*.log
+.cache/
+coverage/
+.github/
+docs/
+examples/
+website/ 

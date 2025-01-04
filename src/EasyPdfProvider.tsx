@@ -1,14 +1,14 @@
 import React, { createContext, useContext } from "react";
-import { EasyPdfInstance } from "./utils/instance";
+import { EasyPdf } from "./utils/EasyPdf";
 
 interface EasyPdfContextType {
-  instance: EasyPdfInstance;
+  instance: EasyPdf;
 }
 
 const EasyPdfContext = createContext<EasyPdfContextType | null>(null);
 
 interface EasyPdfProviderProps {
-  instance: EasyPdfInstance;
+  instance: EasyPdf;
   children: React.ReactNode;
 }
 
