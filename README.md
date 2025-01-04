@@ -1,10 +1,17 @@
-# @easypdf/react
-
 <div align="center">
   <img src="logo.svg" width="100" height="100" alt="EasyPdf Logo" />
+  
+  # @easypdf/react
+  
+  📄 React PDF Generation Made Simple
+  
+  [![npm version](https://badge.fury.io/js/%40easypdf%2Freact.svg)](https://www.npmjs.com/package/@easypdf/react)
+  [![License](https://img.shields.io/badge/license-Proprietary-blue.svg)](./LICENSE)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+  
 </div>
 
-React PDF Generation Made Simple
+---
 
 ## Features
 
