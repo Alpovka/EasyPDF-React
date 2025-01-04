@@ -123,4 +123,4 @@ For detailed documentation, visit our [documentation site](https://easypdf.dev).
 
 ## License
 
-MIT © [Your Name]
+This project is licensed under a proprietary license. See [LICENSE](./LICENSE) for details.
