@@ -20,7 +20,7 @@ export const defaultConfig: PDFConfig = {
 
   // Watermark
   watermark: {
-    text: "",
+    text: "Easy PDF Watermark",
   },
 
   // Export Options
@@ -35,7 +35,7 @@ export const defaultConfig: PDFConfig = {
   },
 
   header: {
-    text: `Page {pageNumber} of {totalPages}`,
+    text: `Easy PDF Header`,
     marginTop: 10,
     marginLeft: 20,
     marginRight: 20,
