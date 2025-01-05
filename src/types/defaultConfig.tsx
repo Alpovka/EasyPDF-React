@@ -42,6 +42,8 @@ export const defaultConfig: PDFConfig = {
     align: "center",
   },
 
+  container: {},
+
   // Enhanced Styling
   styles: {
     backgroundColor: "#ffffff",

@@ -334,15 +334,19 @@ export const generatePDFFromElement = async (
     creator: mergedConfig.metadata?.creator || "EasyPDF Generator",
   });
 
+  // Load images and prepare canvas
   await loadImages(element);
 
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margins = calculateMargins(mergedConfig);
-  const availableHeight = pageHeight - margins.top - margins.bottom;
-  const contentWidth = pageWidth - (margins.left + margins.right);
+  // Apply container styles before canvas creation
+  if (mergedConfig.container?.style) {
+    Object.assign(element.style, mergedConfig.container.style);
+  }
 
-  // Use a higher default scale (2 instead of 1) and allow custom override
+  // Apply container className canvas
+  if (mergedConfig.container?.className) {
+    element.className = mergedConfig.container?.className;
+  }
+
   const defaultScale = 2;
   const mainCanvas = await html2canvas(element as HTMLElement, {
     scale: mergedConfig.scale || defaultScale,
@@ -351,14 +355,19 @@ export const generatePDFFromElement = async (
     backgroundColor: "transparent",
     windowWidth: element.scrollWidth,
     windowHeight: element.scrollHeight,
-    imageTimeout: 0, // Wait for all images
+    imageTimeout: 0,
     onclone: (clonedDoc) => {
-      // Ensure fonts are rendered at high quality
       const style = clonedDoc.createElement("style");
       style.textContent = "* { -webkit-font-smoothing: antialiased; }";
       clonedDoc.head.appendChild(style);
     },
   });
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margins = calculateMargins(mergedConfig);
+  const availableHeight = pageHeight - margins.top - margins.bottom;
+  const contentWidth = pageWidth - (margins.left + margins.right);
 
   const scale = contentWidth / mainCanvas.width;
   const totalHeight = mainCanvas.height * scale;
