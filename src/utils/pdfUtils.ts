@@ -248,6 +248,67 @@ export const addFooter = (
   pdf.setTextColor(currentTextColor);
 };
 
+const collectLinks = (
+  element: HTMLElement,
+  scale: number,
+  sourceY: number,
+  elementRect: DOMRect,
+  mainCanvas: HTMLCanvasElement,
+  contentWidth: number,
+  margins: { top: number; left: number; bottom: number; right: number }
+): Array<{
+  url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}> => {
+  const links: Array<{
+    url: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }> = [];
+  const anchors = element.getElementsByTagName("a");
+
+  for (const anchor of Array.from(anchors)) {
+    const href = anchor.getAttribute("href");
+    if (!href) continue;
+
+    const rect = anchor.getBoundingClientRect();
+
+    // Calculate position relative to the canvas
+    const scaleFactor = contentWidth / mainCanvas.width;
+
+    const x =
+      ((rect.left - elementRect.left) / elementRect.width) *
+        mainCanvas.width *
+        scaleFactor +
+      margins.left;
+    const y =
+      ((rect.top - elementRect.top) / elementRect.height) *
+        mainCanvas.height *
+        scaleFactor -
+      sourceY * scale +
+      margins.top;
+    const width =
+      (rect.width / elementRect.width) * mainCanvas.width * scaleFactor;
+    const height =
+      (rect.height / elementRect.height) * mainCanvas.height * scaleFactor;
+
+    links.push({
+      url: href,
+      x,
+      y,
+      width,
+      height,
+    });
+  }
+
+  return links;
+};
+
 export const generatePDFFromElement = async (
   element: HTMLElement,
   pdfConfig: PDFConfig
@@ -301,16 +362,13 @@ export const generatePDFFromElement = async (
 
   const scale = contentWidth / mainCanvas.width;
   const totalHeight = mainCanvas.height * scale;
+  const elementRect = element.getBoundingClientRect();
 
   let remainingHeight = totalHeight;
   let sourceY = 0;
   let currentPage = 1;
 
   while (remainingHeight > 0) {
-    if (currentPage > 1) {
-      pdf.addPage();
-    }
-
     let pageContentHeight = Math.min(availableHeight, remainingHeight);
     pageContentHeight = handleAutoBreak(
       pageContentHeight,
@@ -319,6 +377,18 @@ export const generatePDFFromElement = async (
       element,
       mainCanvas
     );
+
+    // Skip if there's no content to render (pageContentHeight is 0 or very small)
+    if (pageContentHeight <= 1) {
+      remainingHeight -= pageContentHeight;
+      sourceY += pageContentHeight / scale;
+      continue;
+    }
+
+    // Only add a new page if we have content to render
+    if (currentPage > 1) {
+      pdf.addPage();
+    }
 
     const tempCanvas = document.createElement("canvas");
     // Increase canvas resolution
@@ -350,33 +420,74 @@ export const generatePDFFromElement = async (
         pageContentHeight * scaleFactor
       );
 
-      const imgData = tempCanvas.toDataURL("image/png", 1.0);
-      pdf.addImage(
-        imgData,
-        "PNG",
+      // Check if the canvas has any non-transparent pixels
+      const imageData = ctx.getImageData(
         0,
         0,
-        pdf.internal.pageSize.getWidth(),
-        pdf.internal.pageSize.getHeight(),
-        undefined,
-        "FAST"
+        tempCanvas.width,
+        tempCanvas.height
       );
+      const hasContent = Array.from(imageData.data).some((pixel, index) => {
+        // Check alpha channel (every 4th value)
+        return index % 4 === 3 && pixel > 0;
+      });
+
+      if (hasContent) {
+        const imgData = tempCanvas.toDataURL("image/png", 1.0);
+        pdf.addImage(
+          imgData,
+          "PNG",
+          0,
+          0,
+          pdf.internal.pageSize.getWidth(),
+          pdf.internal.pageSize.getHeight(),
+          undefined,
+          "FAST"
+        );
+
+        // Add links for this page
+        const links = collectLinks(
+          element,
+          scale,
+          sourceY,
+          elementRect,
+          mainCanvas,
+          contentWidth,
+          margins
+        );
+
+        for (const link of links) {
+          // Only add links that are visible on the current page
+          const linkTop = link.y - margins.top;
+          const linkBottom = linkTop + link.height;
+          const pageTop = 0;
+          const pageBottom = pageContentHeight;
+
+          if (linkBottom >= pageTop && linkTop <= pageBottom) {
+            pdf.link(link.x, link.y, link.width, link.height, {
+              url: link.url,
+            });
+          }
+        }
+
+        currentPage++;
+      }
     }
 
     sourceY += pageContentHeight / scale;
     remainingHeight -= pageContentHeight;
-    currentPage++;
   }
 
-  if (mergedConfig.header?.text) {
-    for (let i = 1; i <= currentPage - 1; i++) {
+  const totalPages = currentPage - 1;
+
+  if (mergedConfig.header?.text && totalPages > 0) {
+    for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
-      addHeader(pdf, mergedConfig.header, margins, i, currentPage - 1);
+      addHeader(pdf, mergedConfig.header, margins, i, totalPages);
     }
   }
 
-  if (mergedConfig.footer?.text) {
-    const totalPages = currentPage - 1;
+  if (mergedConfig.footer?.text && totalPages > 0) {
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
       addFooter(pdf, mergedConfig.footer, margins, i, totalPages);
@@ -384,8 +495,8 @@ export const generatePDFFromElement = async (
   }
 
   // Add watermark if configured
-  if (mergedConfig.watermark?.text) {
-    for (let i = 1; i <= currentPage - 1; i++) {
+  if (mergedConfig.watermark?.text && totalPages > 0) {
+    for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
       addWatermark(
         pdf,

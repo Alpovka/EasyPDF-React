@@ -9,12 +9,12 @@ const handleAutoBreak = (
 
   // Get all elements that should not break
   const noBreakElements = Array.from(
-    element.querySelectorAll("table, figure, img, pre, code, .no-break")
+    element.querySelectorAll("table, figure, img, pre, code, ul, ol, .no-break")
   );
 
   // Get all text blocks that should be considered for breaks
   const textBlocks = Array.from(
-    element.querySelectorAll("p, h1, h2, h3, h4, h5, h6, div:not(:has(*))")
+    element.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, div:not(:has(*))")
   );
 
   // First, handle elements that should not break
