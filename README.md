@@ -15,13 +15,12 @@
 
 ## Features
 
-- **Visual Mode**: Design your content in React and get it as PDF instantly
-- **Programmatic Mode**: Generate PDFs dynamically using React components
-- **Flexible Configuration**: Customize page size, orientation, margins, and more
-- **Watermarks**: Apply text watermarks with customizable styles
+- **Visual & Programmatic Modes**: Design PDFs visually with React components or generate them programmatically
+- **Smart Page Breaking**: Intelligent handling of tables, images, and text across pages
+- **Flexible Configuration**: Extensive customization for page layout, styling, headers, footers, and watermarks
 - **Type Safety**: Written in TypeScript with comprehensive type definitions
-- **React Hooks**: Intuitive hooks for managing PDF generation state
-- **High Performance**: Optimized for handling large documents
+- **High Performance**: Optimized for large documents with efficient page breaks and image handling
+- **Error Handling**: Built-in error states and loading indicators
 
 ## Installation
 
@@ -36,55 +35,60 @@ yarn add @easypdf/react
 1. Initialize EasyPdf in your app:
 
 ```tsx
+import { useRoutes } from "react-router-dom";
 import { EasyPdfProvider, EasyPdf } from "@easypdf/react";
 
 // Initialize with your license key
 const easyPdf = EasyPdf.initialize("your-license-key");
 
-function App() {
-  return (
-    <EasyPdfProvider instance={easyPdf}>
-      <YourApp />
-    </EasyPdfProvider>
-  );
+export default function App() {
+  const element = useRoutes(routes);
+  return <EasyPdfProvider instance={easyPdf}>{element}</EasyPdfProvider>;
 }
 ```
 
 2. Create your first PDF:
 
 ```tsx
-import React from "react";
 import { useEasyPdf } from "@easypdf/react";
 
-const PDFGenerator = () => {
-  const { pdfRef, downloadPDF, isDownloadingPDF, error } = useEasyPdf();
-
-  const handleDownload = async () =>
-    await downloadPDF(pdfRef, {
-      filename: "example.pdf",
-    });
+function PDFGenerator() {
+  const { pdfRef, downloadPDF, isDownloadingPDF, error } = useEasyPdf({
+    // Hook-level configuration (optional)
+    pageSize: "A4",
+    watermark: {
+      text: "DRAFT",
+      opacity: 0.2,
+    },
+  });
 
   return (
     <div>
-      <button onClick={handleDownload} disabled={isDownloadingPDF}>
+      <button
+        onClick={() => downloadPDF(pdfRef, { filename: "document.pdf" })}
+        disabled={isDownloadingPDF}
+      >
         {isDownloadingPDF ? "Generating..." : "Download PDF"}
       </button>
-      {error ? <p>error.message</p> : null}
 
-      {/* Content container with pdfRef */}
+      {error && <div style={{ color: "red" }}>Error: {error.message}</div>}
+
       <div ref={pdfRef}>
         <h1>Hello, PDF!</h1>
         <p>This is a simple PDF document.</p>
       </div>
     </div>
   );
-};
+}
 ```
 
 ## Configuration
 
+Configuration can be provided at the hook level or method level:
+
 ```tsx
-const config = {
+// Hook-level configuration
+const { pdfRef, downloadPDF } = useEasyPdf({
   // Page settings
   pageSize: "A4",
   orientation: "portrait",
@@ -95,7 +99,7 @@ const config = {
     left: 20,
   },
 
-  // Container styling
+  // Content sizing (optional, adapts to page size by default)
   container: {
     style: {
       width: "800px",
@@ -111,13 +115,34 @@ const config = {
     defaultTextColor: "#333333",
   },
 
-  // Optional watermark
+  // Headers & Footers
+  header: {
+    text: "Document Header",
+    fontSize: 12,
+    marginTop: 20,
+  },
+  footer: {
+    text: "Page {pageNumber} of {totalPages}",
+    fontSize: 10,
+    marginBottom: 20,
+  },
+
+  // Watermark
   watermark: {
     text: "CONFIDENTIAL",
     fontSize: 60,
     opacity: 0.2,
+    angle: -45,
   },
-};
+});
+
+// Method-level configuration (merges with hook config)
+await downloadPDF(pdfRef, {
+  filename: "document.pdf",
+  watermark: {
+    opacity: 0.3, // Overrides hook config
+  },
+});
 ```
 
 ## Documentation
@@ -126,4 +151,4 @@ For detailed documentation, visit our [documentation site](https://easypdf.dev).
 
 ## License
 
-This project is licensed under a proprietary license. See [LICENSE](./LICENSE) for details.
+This project is licensed under a proprietary license. A license key is required for usage. See [LICENSE](./LICENSE) for details.

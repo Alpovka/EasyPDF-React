@@ -17,7 +17,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      name: "EasyPDF",
+      name: "EasyPdf/React",
       formats: ["es", "umd"],
       fileName: (format) => `easypdf.${format}.js`,
     },
