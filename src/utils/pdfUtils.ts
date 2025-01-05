@@ -281,13 +281,22 @@ export const generatePDFFromElement = async (
   const availableHeight = pageHeight - margins.top - margins.bottom;
   const contentWidth = pageWidth - (margins.left + margins.right);
 
+  // Use a higher default scale (2 instead of 1) and allow custom override
+  const defaultScale = 2;
   const mainCanvas = await html2canvas(element as HTMLElement, {
-    scale: mergedConfig.scale,
+    scale: mergedConfig.scale || defaultScale,
     useCORS: true,
     logging: false,
     backgroundColor: "transparent",
     windowWidth: element.scrollWidth,
     windowHeight: element.scrollHeight,
+    imageTimeout: 0, // Wait for all images
+    onclone: (clonedDoc) => {
+      // Ensure fonts are rendered at high quality
+      const style = clonedDoc.createElement("style");
+      style.textContent = "* { -webkit-font-smoothing: antialiased; }";
+      clonedDoc.head.appendChild(style);
+    },
   });
 
   const scale = contentWidth / mainCanvas.width;
@@ -312,11 +321,20 @@ export const generatePDFFromElement = async (
     );
 
     const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = pdf.internal.pageSize.getWidth();
-    tempCanvas.height = pdf.internal.pageSize.getHeight();
-    const ctx = tempCanvas.getContext("2d");
+    // Increase canvas resolution
+    const scaleFactor = 2;
+    tempCanvas.width = pdf.internal.pageSize.getWidth() * scaleFactor;
+    tempCanvas.height = pdf.internal.pageSize.getHeight() * scaleFactor;
+    const ctx = tempCanvas.getContext("2d", {
+      alpha: true,
+      willReadFrequently: true,
+    });
 
     if (ctx) {
+      // Enable high-quality image rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
       ctx.fillStyle = mergedConfig.styles?.backgroundColor ?? "#ffffff";
       ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
@@ -326,13 +344,13 @@ export const generatePDFFromElement = async (
         sourceY,
         mainCanvas.width,
         pageContentHeight / scale,
-        margins.left,
-        margins.top,
-        contentWidth,
-        pageContentHeight
+        margins.left * scaleFactor,
+        margins.top * scaleFactor,
+        contentWidth * scaleFactor,
+        pageContentHeight * scaleFactor
       );
 
-      const imgData = tempCanvas.toDataURL("image/png");
+      const imgData = tempCanvas.toDataURL("image/png", 1.0);
       pdf.addImage(
         imgData,
         "PNG",
