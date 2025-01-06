@@ -3,10 +3,12 @@ export const validateLicense = async ({
 }: {
   licenseKey: string;
 }): Promise<boolean | undefined> => {
+  if (window.location.hostname === "localhost") {
+    return true;
+  }
+
   if (!licenseKey) {
-    throw new Error(
-      "License key not initialized. Call initializeLicense first"
-    );
+    throw new Error("License key not initialized. Call initialize first");
   }
 
   try {
