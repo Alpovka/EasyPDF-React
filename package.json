@@ -42,8 +42,8 @@
     "react-pdf",
     "html2canvas"
   ],
-  "author": "Your Name",
-  "license": "SEE LICENSE IN LICENSE",
+  "author": "Alperen KARAVELIOGLU",
+  "license": "PROPRIETARY",
   "licenseText": "Dual license: Personal ($15) or Commercial ($99). See LICENSE file for details.",
   "repository": {
     "type": "git",
