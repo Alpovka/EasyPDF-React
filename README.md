@@ -147,7 +147,7 @@ await downloadPDF(pdfRef, {
 
 ## Documentation
 
-For detailed documentation, visit our [documentation site](https://easypdf.dev).
+For detailed documentation, visit our [documentation site](https://easypdf.vercel.app/docs).
 
 ## License
 
