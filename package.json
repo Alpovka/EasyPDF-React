@@ -1,6 +1,6 @@
 {
   "name": "@easypdf/react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React PDF Generation Made Simple",
   "type": "module",
   "main": "dist/easypdf.umd.js",
@@ -52,7 +52,7 @@
   "bugs": {
     "url": "https://github.com/Alpovka/EasyPDF-React/issues"
   },
-  "homepage": "https://alpovka.github.io/EasyPdf",
+  "homepage": "https://easypdf.vercel.app/",
   "publishConfig": {
     "access": "public"
   }

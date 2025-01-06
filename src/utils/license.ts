@@ -10,13 +10,16 @@ export const validateLicense = async ({
   }
 
   try {
-    const response = await fetch("http://localhost:3001/api/validate-license", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ licenseKey }),
-    });
+    const response = await fetch(
+      "https://easypdf.vercel.app/api/validate-license",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ licenseKey }),
+      }
+    );
 
     // Check for HTTP status codes
     if (response.status >= 500) {
