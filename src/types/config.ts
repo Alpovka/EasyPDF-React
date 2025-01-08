@@ -8,7 +8,6 @@ export type PageSize =
 export interface PDFConfig {
   // Page Configuration
   pageSize?: PageSize;
-  orientation?: "portrait" | "landscape";
   margins?: {
     top?: number;
     right?: number;

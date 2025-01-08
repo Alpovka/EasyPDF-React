@@ -91,7 +91,6 @@ Configuration can be provided at the hook level or method level:
 const { pdfRef, downloadPDF } = useEasyPdf({
   // Page settings
   pageSize: "A4",
-  orientation: "portrait",
   margins: {
     top: 20,
     right: 20,

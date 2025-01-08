@@ -3,7 +3,6 @@ import { PDFConfig } from "../types/config";
 export const defaultConfig: PDFConfig = {
   // Page Configuration
   pageSize: "A4",
-  orientation: "portrait",
   margins: {
     top: 30,
     right: 20,

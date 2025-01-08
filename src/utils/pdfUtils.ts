@@ -317,7 +317,6 @@ export const generatePDFFromElement = async (
 
   // Initialize PDF with basic config
   const pdf = new jsPDF({
-    orientation: mergedConfig.orientation || "portrait",
     unit: "px",
     format:
       typeof mergedConfig.pageSize === "object"
