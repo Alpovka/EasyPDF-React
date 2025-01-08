@@ -1,6 +1,6 @@
 {
   "name": "@easypdf/react",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "React PDF Generation Made Simple",
   "type": "module",
   "main": "dist/easypdf.umd.js",
