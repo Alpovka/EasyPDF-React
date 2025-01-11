@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Add Contributor
-        uses: all-contributors/all-contributors-cli@1.0.0
+        uses: all-contributors/all-contributors-cli@1.19.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
