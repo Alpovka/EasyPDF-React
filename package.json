@@ -40,5 +40,9 @@
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
     "vite-plugin-dts": "^3.7.0"
+  },
+  "dependencies": {
+    "jspdf": "^2.5.1",
+    "html2canvas-pro": "^1.0.0"
   }
 }
