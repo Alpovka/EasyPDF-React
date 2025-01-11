@@ -1,0 +1,39 @@
+name: Update Contributors
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+# Add permissions block
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-contributors:
+    # Only run if PR was merged and author is not the repository owner
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login != 'Alpovka'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Add Contributor
+        uses: all-contributors/all-contributors-cli@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: add ${{ github.event.pull_request.user.login }} code
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "docs: add ${{ github.event.pull_request.user.login }} as contributor"
+          title: "docs: add ${{ github.event.pull_request.user.login }} as contributor"
+          body: |
+            Automatically adding @${{ github.event.pull_request.user.login }} as contributor.
+            This PR was automatically created by the Update Contributors workflow.
+          branch: update-contributors/${{ github.event.pull_request.user.login }}
+          delete-branch: true
