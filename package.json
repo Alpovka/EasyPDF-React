@@ -2,7 +2,7 @@
   "name": "@easypdf/react",
   "version": "1.0.8",
   "description": "Free and open source React library for generating beautiful PDFs from React components",
-  "author": "Alperen Karavelioğlu <karavelx@gmail.com>",
+  "author": "Alperen KARAVELIOGLU",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,6 +16,13 @@
     "free",
     "open-source"
   ],
+  "bugs": {
+    "url": "https://github.com/Alpovka/EasyPDF-React/issues"
+  },
+  "homepage": "https://easypdf.vercel.app/",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

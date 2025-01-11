@@ -104,8 +104,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - 📚 [Documentation](https://easypdf.vercel.app/docs)
-- 🐛 [Issue Tracker](https://github.com/alpovka/easypdf/issues)
-- 💬 [Discussions](https://github.com/alpovka/easypdf/discussions)
+- 🐛 [Issues](https://github.com/alpovka/easypdf/issues)
 
 ## Author
 
