@@ -14,8 +14,7 @@ jobs:
   update-contributors:
     # Only run if PR was merged and author is not the repository owner
     if: |
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.user.login != 'Alpovka'
+      github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
