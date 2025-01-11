@@ -1,25 +1,14 @@
-name: Publish to NPM and GitHub Release
+name: Release and Publish
 on:
   push:
     tags:
       - "v*"
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # This ensures all history is fetched
-
-      # Merge to main
-      - name: Merge to main
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git checkout main
-          git merge ${{ github.ref }}
-          git push origin main
 
       # Setup Node.js
       - uses: actions/setup-node@v3
