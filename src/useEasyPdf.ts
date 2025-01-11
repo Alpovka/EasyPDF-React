@@ -16,17 +16,6 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
   const [isCreatingBlob, setIsCreatingBlob] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Validation check helper
-  const checkValidation = useCallback(() => {
-    if (!instance.getValidationStatus()) {
-      const error = new Error(
-        "EasyPDF: Invalid license - PDF operations are not allowed"
-      );
-      setError(error);
-      throw error;
-    }
-  }, [instance]);
-
   const downloadPDF = useCallback(
     async (
       refOrBlob: React.RefObject<HTMLDivElement> | Blob | string | null,
@@ -40,7 +29,6 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
       try {
         setIsDownloadingPDF(true);
         setError(null);
-        checkValidation();
         if (!refOrBlob) {
           throw new Error("PDF reference or blob not found");
         }
@@ -84,7 +72,7 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         setIsDownloadingPDF(false);
       }
     },
-    [instance, initialConfig, checkValidation]
+    [instance, initialConfig]
   );
 
   const createPDF = useCallback(
@@ -93,7 +81,6 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
       try {
         setIsGeneratingPDF(true);
         setError(null);
-        checkValidation();
         await renderContent(tempDiv, content);
         const mergedConfig = {
           ...instance.getConfig(),
@@ -115,7 +102,7 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         document.body.removeChild(tempDiv);
       }
     },
-    [instance, initialConfig, checkValidation]
+    [instance, initialConfig]
   );
 
   const createPDFBlob = useCallback(
@@ -124,7 +111,6 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
       try {
         setIsCreatingBlob(true);
         setError(null);
-        checkValidation();
         await renderContent(tempDiv, content);
         const mergedConfig = {
           ...instance.getConfig(),
@@ -146,13 +132,12 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         document.body.removeChild(tempDiv);
       }
     },
-    [instance, initialConfig, checkValidation]
+    [instance, initialConfig]
   );
 
   const viewPDF = useCallback(
     async (content: React.ReactNode | Blob, config?: PDFConfig) => {
       try {
-        checkValidation();
         let blob: Blob;
         if (content instanceof Blob) {
           blob = content;
@@ -169,7 +154,7 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         throw error;
       }
     },
-    [createPDFBlob, checkValidation]
+    [createPDFBlob]
   );
 
   return {
