@@ -1,59 +1,44 @@
 {
   "name": "@easypdf/react",
-  "version": "1.0.4",
-  "description": "React PDF Generation Made Simple",
-  "type": "module",
-  "main": "dist/easypdf.umd.js",
-  "module": "dist/easypdf.es.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "logo.svg",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "vite build",
-    "dev": "vite build --watch",
-    "prepublishOnly": "npm run build"
-  },
-  "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "dependencies": {
-    "html2canvas-pro": "^1.5.8",
-    "jspdf": "^2.5.1"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vite-plugin-dts": "^4.4.0"
+  "version": "1.0.7",
+  "description": "Free and open source React library for generating beautiful PDFs from React components",
+  "author": "Alperen Karavelioğlu <karavelx@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alpovka/easypdf"
   },
   "keywords": [
     "react",
     "pdf",
-    "jsPDF",
+    "generator",
     "typescript",
-    "html-to-pdf",
-    "react-pdf",
-    "html2canvas"
+    "free",
+    "open-source"
   ],
-  "author": "Alperen KARAVELIOGLU",
-  "license": "PROPRIETARY",
-  "licenseText": "Dual license: Personal ($15) or Commercial ($99). See LICENSE file for details.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Alpovka/EasyPDF-React"
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build"
   },
-  "bugs": {
-    "url": "https://github.com/Alpovka/EasyPDF-React/issues"
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
-  "homepage": "https://easypdf.vercel.app/",
-  "publishConfig": {
-    "access": "public"
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "vite-plugin-dts": "^3.7.0"
   }
 }

@@ -1,26 +1,35 @@
+# EasyPdf React
+
 <div align="center">
-  <img src="logo.svg" width="100" height="100" alt="EasyPdf Logo" />
-  
-  # @easypdf/react
-  
-  📄 React PDF Generation Made Simple
-  
-  [![npm version](https://badge.fury.io/js/%40easypdf%2Freact.svg)](https://www.npmjs.com/package/@easypdf/react)
-  [![License](https://img.shields.io/badge/license-Proprietary-blue.svg)](./LICENSE)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-  
+  <img src="logo.svg" alt="EasyPdf Logo" width="200" />
+  <h1>EasyPdf React</h1>
+  <p><strong>Free and open source React library for generating beautiful PDFs from React components</strong></p>
 </div>
 
----
+<div align="center">
+  <a href="https://www.npmjs.com/package/@easypdf/react">
+    <img src="https://img.shields.io/npm/v/@easypdf/react.svg" alt="npm version" />
+  </a>
+  <a href="https://github.com/alpovka/easypdf/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
+  </a>
+  <a href="https://www.npmjs.com/package/@easypdf/react">
+    <img src="https://img.shields.io/npm/dm/@easypdf/react.svg" alt="npm downloads" />
+  </a>
+</div>
 
 ## Features
 
-- **Visual & Programmatic Modes**: Design PDFs visually with React components or generate them programmatically
-- **Smart Page Breaking**: Intelligent handling of tables, images, and text across pages
-- **Flexible Configuration**: Extensive customization for page layout, styling, headers, footers, and watermarks
-- **Type Safety**: Written in TypeScript with comprehensive type definitions
-- **High Performance**: Optimized for large documents with efficient page breaks and image handling
-- **Error Handling**: Built-in error states and loading indicators
+- 🎨 **Visual Mode**: Design PDFs using React components with real-time preview
+- 🚀 **Programmatic Mode**: Generate PDFs dynamically with programmatic content creation
+- 📝 **Rich Text Support**: Full support for text formatting, lists, tables, and more
+- 🖼️ **Image Support**: Include images in your PDFs with automatic optimization
+- 🎯 **Page Breaking**: Smart page breaking algorithm for optimal content flow
+- 💅 **Styling**: Full CSS support including flexbox and grid layouts
+- 🎭 **Themes**: Built-in themes and support for custom themes
+- 📏 **Headers & Footers**: Customizable headers and footers
+- 💧 **Watermarks**: Add text or image watermarks
+- 📱 **Responsive**: Adapts to different page sizes and orientations
 
 ## Installation
 
@@ -32,122 +41,76 @@ yarn add @easypdf/react
 
 ## Quick Start
 
-1. Initialize EasyPdf in your app:
-
 ```tsx
-import { useRoutes } from "react-router-dom";
 import { EasyPdfProvider, EasyPdf } from "@easypdf/react";
 
-// Initialize with your license key
-const easyPdf = EasyPdf.initialize("your-license-key");
+// Initialize EasyPdf
+const easyPdf = EasyPdf.initialize();
 
-export default function App() {
-  const element = useRoutes(routes);
-  return <EasyPdfProvider instance={easyPdf}>{element}</EasyPdfProvider>;
+function App() {
+  return (
+    <EasyPdfProvider instance={easyPdf}>
+      <YourApp />
+    </EasyPdfProvider>
+  );
 }
 ```
 
-2. Create your first PDF:
+## Basic Usage
 
 ```tsx
 import { useEasyPdf } from "@easypdf/react";
 
 function PDFGenerator() {
-  const { pdfRef, downloadPDF, isDownloadingPDF, error } = useEasyPdf({
-    // Hook-level configuration (optional)
-    pageSize: "A4",
-    watermark: {
-      text: "DRAFT",
-      opacity: 0.2,
-    },
-  });
+  const { pdfRef, downloadPDF } = useEasyPdf();
 
   return (
     <div>
-      <button
-        onClick={() => downloadPDF(pdfRef, { filename: "document.pdf" })}
-        disabled={isDownloadingPDF}
-      >
-        {isDownloadingPDF ? "Generating..." : "Download PDF"}
-      </button>
-
-      {error && <div style={{ color: "red" }}>Error: {error.message}</div>}
+      <button onClick={() => downloadPDF(pdfRef)}>Download PDF</button>
 
       <div ref={pdfRef}>
         <h1>Hello, PDF!</h1>
-        <p>This is a simple PDF document.</p>
+        <p>This content will be converted to PDF.</p>
       </div>
     </div>
   );
 }
 ```
 
-## Configuration
-
-Configuration can be provided at the hook level or method level:
-
-```tsx
-// Hook-level configuration
-const { pdfRef, downloadPDF } = useEasyPdf({
-  // Page settings
-  pageSize: "A4",
-  margins: {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 20,
-  },
-
-  // Content sizing (optional, adapts to page size by default)
-  container: {
-    style: {
-      width: "800px",
-      margin: "0 auto",
-    },
-  },
-
-  // Styling
-  styles: {
-    backgroundColor: "#ffffff",
-    defaultFontSize: 12,
-    defaultFontFamily: "Arial, sans-serif",
-    defaultTextColor: "#333333",
-  },
-
-  // Headers & Footers
-  header: {
-    text: "Document Header",
-    fontSize: 12,
-    marginTop: 20,
-  },
-  footer: {
-    text: "Page {pageNumber} of {totalPages}",
-    fontSize: 10,
-    marginBottom: 20,
-  },
-
-  // Watermark
-  watermark: {
-    text: "CONFIDENTIAL",
-    fontSize: 60,
-    opacity: 0.2,
-    angle: -45,
-  },
-});
-
-// Method-level configuration (merges with hook config)
-await downloadPDF(pdfRef, {
-  filename: "document.pdf",
-  watermark: {
-    opacity: 0.3, // Overrides hook config
-  },
-});
-```
-
 ## Documentation
 
-For detailed documentation, visit our [documentation site](https://easypdf.vercel.app/docs).
+Visit our [documentation](https://easypdf.vercel.app/docs) for detailed guides and examples.
+
+## Examples
+
+- [Basic Usage](https://easypdf.vercel.app/docs/examples/basic-usage)
+- [Visual Mode](https://easypdf.vercel.app/docs/examples/visual-mode)
+- [Programmatic Mode](https://easypdf.vercel.app/docs/examples/programmatic-mode)
+- [Custom Styling](https://easypdf.vercel.app/docs/examples/styling)
+- [Headers and Footers](https://easypdf.vercel.app/docs/examples/headers-footers)
+- [Watermarks](https://easypdf.vercel.app/docs/examples/watermarks)
+- [Page Breaking](https://easypdf.vercel.app/docs/examples/page-breaking)
+- [Tables](https://easypdf.vercel.app/docs/examples/tables)
+- [Images](https://easypdf.vercel.app/docs/examples/images)
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ## License
 
-This project is licensed under a proprietary license. A license key is required for usage. See [LICENSE](./LICENSE) for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📚 [Documentation](https://easypdf.vercel.app/docs)
+- 🐛 [Issue Tracker](https://github.com/alpovka/easypdf/issues)
+- 💬 [Discussions](https://github.com/alpovka/easypdf/discussions)
+
+## Author
+
+- Alperen Karavelioğlu ([@alpovka](https://github.com/alpovka))
+
+## Acknowledgments
+
+Special thanks to all our contributors and the open source community.
