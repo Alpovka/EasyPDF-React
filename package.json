@@ -1,6 +1,6 @@
 {
   "name": "@easypdf/react",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Free and open source React library for generating beautiful PDFs from React components",
   "author": "Alperen KARAVELIOGLU",
   "license": "MIT",
