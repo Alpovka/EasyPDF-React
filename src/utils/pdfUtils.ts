@@ -376,118 +376,128 @@ export const generatePDFFromElement = async (
   let sourceY = 0;
   let currentPage = 1;
 
-  while (remainingHeight > 0) {
-    let pageContentHeight = Math.min(availableHeight, remainingHeight);
-    pageContentHeight = handleAutoBreak(
-      pageContentHeight,
-      sourceY,
-      scale,
-      element,
-      mainCanvas
-    );
+  // Break up the rendering work into chunks using setTimeout
+  const processNextChunk = () =>
+    new Promise<void>((resolve) => {
+      setTimeout(async () => {
+        if (remainingHeight <= 0) {
+          resolve();
+          return;
+        }
 
-    // Skip if there's no content to render (pageContentHeight is 0 or very small)
-    if (pageContentHeight <= 1) {
-      remainingHeight -= pageContentHeight;
-      sourceY += pageContentHeight / scale;
-      continue;
-    }
-
-    // Only add a new page if we have content to render
-    if (currentPage > 1) {
-      pdf.addPage();
-    }
-
-    const tempCanvas = document.createElement("canvas");
-    // Increase canvas resolution
-    const scaleFactor = 2;
-    tempCanvas.width = pdf.internal.pageSize.getWidth() * scaleFactor;
-    tempCanvas.height = pdf.internal.pageSize.getHeight() * scaleFactor;
-    const ctx = tempCanvas.getContext("2d", {
-      alpha: true,
-      willReadFrequently: true,
-    });
-
-    if (ctx) {
-      // Enable high-quality image rendering
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-
-      ctx.fillStyle = mergedConfig.styles?.backgroundColor ?? "#ffffff";
-      ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-      ctx.drawImage(
-        mainCanvas,
-        0,
-        sourceY,
-        mainCanvas.width,
-        pageContentHeight / scale,
-        margins.left * scaleFactor,
-        margins.top * scaleFactor,
-        contentWidth * scaleFactor,
-        pageContentHeight * scaleFactor
-      );
-
-      // Check if the canvas has any non-transparent pixels
-      const imageData = ctx.getImageData(
-        0,
-        0,
-        tempCanvas.width,
-        tempCanvas.height
-      );
-      const hasContent = Array.from(imageData.data).some((pixel, index) => {
-        // Check alpha channel (every 4th value)
-        return index % 4 === 3 && pixel > 0;
-      });
-
-      if (hasContent) {
-        const imgData = tempCanvas.toDataURL("image/png", 1.0);
-        pdf.addImage(
-          imgData,
-          "PNG",
-          0,
-          0,
-          pdf.internal.pageSize.getWidth(),
-          pdf.internal.pageSize.getHeight(),
-          undefined,
-          "FAST"
-        );
-
-        // Add links for this page
-        const links = collectLinks(
-          element,
-          scale,
+        let pageContentHeight = Math.min(availableHeight, remainingHeight);
+        pageContentHeight = handleAutoBreak(
+          pageContentHeight,
           sourceY,
-          elementRect,
-          mainCanvas,
-          contentWidth,
-          margins
+          scale,
+          element,
+          mainCanvas
         );
 
-        for (const link of links) {
-          // Only add links that are visible on the current page
-          const linkTop = link.y - margins.top;
-          const linkBottom = linkTop + link.height;
-          const pageTop = 0;
-          const pageBottom = pageContentHeight;
+        // Skip if there's no content to render
+        if (pageContentHeight <= 1) {
+          remainingHeight -= pageContentHeight;
+          sourceY += pageContentHeight / scale;
+          await processNextChunk();
+          resolve();
+          return;
+        }
 
-          if (linkBottom >= pageTop && linkTop <= pageBottom) {
-            pdf.link(link.x, link.y, link.width, link.height, {
-              url: link.url,
-            });
+        // Only add a new page if we have content to render
+        if (currentPage > 1) {
+          pdf.addPage();
+        }
+
+        const tempCanvas = document.createElement("canvas");
+        const scaleFactor = 2;
+        tempCanvas.width = pdf.internal.pageSize.getWidth() * scaleFactor;
+        tempCanvas.height = pdf.internal.pageSize.getHeight() * scaleFactor;
+        const ctx = tempCanvas.getContext("2d", {
+          alpha: true,
+          willReadFrequently: true,
+        });
+
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+
+          ctx.fillStyle = mergedConfig.styles?.backgroundColor ?? "#ffffff";
+          ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+          ctx.drawImage(
+            mainCanvas,
+            0,
+            sourceY,
+            mainCanvas.width,
+            pageContentHeight / scale,
+            margins.left * scaleFactor,
+            margins.top * scaleFactor,
+            contentWidth * scaleFactor,
+            pageContentHeight * scaleFactor
+          );
+
+          const imageData = ctx.getImageData(
+            0,
+            0,
+            tempCanvas.width,
+            tempCanvas.height
+          );
+          const hasContent = Array.from(imageData.data).some(
+            (pixel, index) => index % 4 === 3 && pixel > 0
+          );
+
+          if (hasContent) {
+            const imgData = tempCanvas.toDataURL("image/png", 1.0);
+            pdf.addImage(
+              imgData,
+              "PNG",
+              0,
+              0,
+              pdf.internal.pageSize.getWidth(),
+              pdf.internal.pageSize.getHeight(),
+              undefined,
+              "FAST"
+            );
+
+            const links = collectLinks(
+              element,
+              scale,
+              sourceY,
+              elementRect,
+              mainCanvas,
+              contentWidth,
+              margins
+            );
+
+            for (const link of links) {
+              const linkTop = link.y - margins.top;
+              const linkBottom = linkTop + link.height;
+              const pageTop = 0;
+              const pageBottom = pageContentHeight;
+
+              if (linkBottom >= pageTop && linkTop <= pageBottom) {
+                pdf.link(link.x, link.y, link.width, link.height, {
+                  url: link.url,
+                });
+              }
+            }
+
+            currentPage++;
           }
         }
 
-        currentPage++;
-      }
-    }
+        sourceY += pageContentHeight / scale;
+        remainingHeight -= pageContentHeight;
+        await processNextChunk();
+        resolve();
+      }, 0); // Use a 0ms timeout to allow browser to handle UI events
+    });
 
-    sourceY += pageContentHeight / scale;
-    remainingHeight -= pageContentHeight;
-  }
+  await processNextChunk();
 
   const totalPages = currentPage - 1;
 
+  // Add header, footer, and watermark after all pages are processed
   if (mergedConfig.header?.text && totalPages > 0) {
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
@@ -502,7 +512,6 @@ export const generatePDFFromElement = async (
     }
   }
 
-  // Add watermark if configured
   if (mergedConfig.watermark?.text && totalPages > 0) {
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);

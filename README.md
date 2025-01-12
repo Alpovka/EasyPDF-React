@@ -30,6 +30,7 @@
 - 📏 **Headers & Footers**: Customizable headers and footers
 - 💧 **Watermarks**: Add text or image watermarks
 - 📱 **Responsive**: Adapts to different page sizes and orientations
+- ⚡️ **Non-Blocking**: Smooth PDF generation that doesn't freeze the browser UI
 
 ## Installation
 

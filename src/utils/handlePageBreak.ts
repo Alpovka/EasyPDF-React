@@ -15,10 +15,10 @@ const handleAutoBreak = (
   // Get all text blocks that should be considered for breaks
   const textBlocks = Array.from(
     element.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, div:not(:has(*))")
-  );
+  ).filter((el) => !noBreakElements.includes(el));
 
   // First, handle elements that should not break
-  for (const el of [...noBreakElements, ...textBlocks]) {
+  for (const el of noBreakElements) {
     const rect = el.getBoundingClientRect();
     const elementRect = element.getBoundingClientRect();
 
@@ -33,18 +33,25 @@ const handleAutoBreak = (
       scale;
     const elHeight = elBottom - elTop;
 
-    // Only consider elements that start within current page
-    if (elTop >= sourceY * scale && elTop < sourceY * scale + proposedHeight) {
-      // If element would break across pages
-      if (elBottom > sourceY * scale + proposedHeight) {
-        // If element fits on a single page, move it to next page
+    // Check if element intersects with current page
+    const pageTop = sourceY * scale;
+    const pageBottom = sourceY * scale + proposedHeight;
+
+    if (elBottom > pageBottom) {
+      // If element starts before current page and extends into it
+      // If element starts on this page but would break
+      if (elBottom > pageBottom) {
+        // If element can fit on a single page, move it to next page
         if (elHeight <= proposedHeight) {
-          adjustedHeight = Math.min(adjustedHeight, elTop - sourceY * scale);
+          adjustedHeight = Math.min(adjustedHeight, elTop - pageTop);
         }
+        // If element is larger than page height, let it overflow
+        // This prevents infinite loops with elements larger than page
       }
     }
   }
 
+  // Only process text blocks if we haven't already decided to break
   // Then, handle text blocks with improved sentence and row breaking
   for (const block of textBlocks) {
     const rect = block.getBoundingClientRect();
