@@ -309,6 +309,168 @@ const collectLinks = (
   return links;
 };
 
+const collectTextContent = (
+  element: HTMLElement,
+  scale: number,
+  elementRect: DOMRect,
+  mainCanvas: HTMLCanvasElement,
+  contentWidth: number
+): Array<{
+  text: string;
+  x: number;
+  y: number;
+  fontSize: number;
+  fontFamily: string;
+}> => {
+  const textElements: Array<{
+    text: string;
+    x: number;
+    y: number;
+    fontSize: number;
+    fontFamily: string;
+  }> = [];
+
+  // Get absolutely all text nodes without any filtering
+  const getAllTextNodes = (node: Node): Text[] => {
+    const texts: Text[] = [];
+    if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+      texts.push(node as Text);
+    }
+    const children = node.childNodes;
+    for (let i = 0; i < children.length; i++) {
+      texts.push(...getAllTextNodes(children[i]));
+    }
+    return texts;
+  };
+
+  // Get all text nodes
+  const textNodes = getAllTextNodes(element);
+
+  // Process each text node
+  textNodes.forEach((node) => {
+    const text = node.textContent;
+    if (!text?.trim()) return;
+
+    const parentElement = node.parentElement || element;
+    const computedStyle = window.getComputedStyle(parentElement);
+
+    // Skip if element is not visible
+    if (
+      computedStyle.display === "none" ||
+      computedStyle.visibility === "hidden" ||
+      parseFloat(computedStyle.opacity) === 0
+    ) {
+      return;
+    }
+
+    const fontFamily = computedStyle.fontFamily;
+
+    try {
+      // Create a range for the entire text node
+      const range = document.createRange();
+      range.selectNodeContents(node);
+
+      // Split text into words while preserving whitespace
+      const words = text.match(/\S+|\s+/g) || [];
+      let currentPosition = 0;
+
+      words.forEach((word) => {
+        try {
+          // Create a range for this word
+          const wordRange = document.createRange();
+          wordRange.setStart(node, text.indexOf(word, currentPosition));
+          wordRange.setEnd(
+            node,
+            text.indexOf(word, currentPosition) + word.length
+          );
+          currentPosition = text.indexOf(word, currentPosition) + word.length;
+
+          const rects = wordRange.getClientRects();
+          if (!rects.length) return;
+
+          // Use the first rect for positioning
+          const rect = rects[0];
+          const scaleFactor = contentWidth / mainCanvas.width;
+
+          // Calculate exact position with scale factor
+          const x =
+            ((rect.left - elementRect.left) / elementRect.width) *
+            mainCanvas.width *
+            scaleFactor;
+          const y =
+            ((rect.top - elementRect.top) / elementRect.height) *
+            mainCanvas.height *
+            scaleFactor;
+
+          // Get exact character dimensions
+          const charHeight = rect.height;
+
+          // Calculate the exact font size based on the rendered height
+          const renderedFontSize =
+            (charHeight / elementRect.height) * mainCanvas.height * scale;
+
+          // Add the character with exact positioning
+          textElements.push({
+            text: word,
+            x: x, // Remove the horizontal adjustment
+            y: y + renderedFontSize * 0.2, // Minimal baseline adjustment
+            fontSize: renderedFontSize,
+            fontFamily,
+          });
+        } catch (e) {
+          // Skip character if range creation fails
+          console.warn("Failed to process character:", word);
+        }
+      });
+    } catch (e) {
+      // Fallback for any errors in main range creation
+      const parentRect = parentElement.getBoundingClientRect();
+      const scaleFactor = contentWidth / mainCanvas.width;
+      const x =
+        ((parentRect.left - elementRect.left) / elementRect.width) *
+        mainCanvas.width *
+        scaleFactor;
+      const y =
+        ((parentRect.top - elementRect.top) / elementRect.height) *
+        mainCanvas.height *
+        scaleFactor;
+
+      // Calculate dimensions from parent element
+      const renderedHeight =
+        (parentRect.height / elementRect.height) * mainCanvas.height * scale;
+      const renderedFontSize = renderedHeight;
+
+      // Add the whole text as a fallback using the same positioning logic
+      textElements.push({
+        text,
+        x: x,
+        y: y + renderedFontSize * 0.2,
+        fontSize: renderedFontSize,
+        fontFamily,
+      });
+    }
+  });
+
+  // Sort text elements by their position (top to bottom, left to right)
+  const LINE_HEIGHT_THRESHOLD = 5; // pixels
+  return textElements.sort((a, b) => {
+    const yDiff = a.y - b.y;
+    if (Math.abs(yDiff) < LINE_HEIGHT_THRESHOLD) {
+      return a.x - b.x;
+    }
+    return yDiff;
+  });
+};
+
+// Define the TextElement type
+type TextElement = {
+  text: string;
+  x: number;
+  y: number;
+  fontSize: number;
+  fontFamily: string;
+};
+
 export const generatePDFFromElement = async (
   element: HTMLElement,
   pdfConfig: PDFConfig
@@ -371,6 +533,15 @@ export const generatePDFFromElement = async (
   const scale = contentWidth / mainCanvas.width;
   const totalHeight = mainCanvas.height * scale;
   const elementRect = element.getBoundingClientRect();
+
+  // Collect all text content first
+  const allTextElements = collectTextContent(
+    element,
+    scale,
+    elementRect,
+    mainCanvas,
+    contentWidth
+  );
 
   let remainingHeight = totalHeight;
   let sourceY = 0;
@@ -447,6 +618,7 @@ export const generatePDFFromElement = async (
           );
 
           if (hasContent) {
+            // Add the background image layer
             const imgData = tempCanvas.toDataURL("image/png", 1.0);
             pdf.addImage(
               imgData,
@@ -458,6 +630,63 @@ export const generatePDFFromElement = async (
               undefined,
               "FAST"
             );
+
+            // Add text elements for this page
+            const pageTop = sourceY * scale;
+
+            // Filter text elements that belong to this page
+            const pageTextElements = allTextElements.filter((textEl) => {
+              const elementY = textEl.y - pageTop;
+              const elementCenter = elementY + textEl.fontSize / 2;
+              return elementCenter >= 0 && elementCenter <= pageContentHeight;
+            });
+
+            // Set text color to transparent for invisible but selectable text
+            pdf.setTextColor(255, 255, 255, 0);
+
+            // Group text elements by lines for better spacing
+            const lineThreshold = 2; // pixels
+            const lines = pageTextElements.reduce(
+              (acc: TextElement[][], textEl) => {
+                const lastLine = acc[acc.length - 1];
+                if (
+                  lastLine &&
+                  Math.abs(lastLine[0].y - textEl.y) <= lineThreshold
+                ) {
+                  lastLine.push(textEl);
+                } else {
+                  acc.push([textEl]);
+                }
+                return acc;
+              },
+              []
+            );
+
+            // Process each line
+            lines.forEach((lineElements) => {
+              // Sort elements in the line by x position
+              lineElements.sort((a: TextElement, b: TextElement) => a.x - b.x);
+
+              // Render each element in the line
+              lineElements.forEach((textEl: TextElement) => {
+                pdf.setFontSize(textEl.fontSize);
+                try {
+                  const adjustedY = textEl.y - pageTop + margins.top;
+                  const adjustedX = textEl.x + margins.left;
+
+                  pdf.text(textEl.text, adjustedX, adjustedY, {
+                    baseline: "top",
+                    align: "left",
+                    renderingMode: "invisible",
+                  });
+                } catch (e) {
+                  console.warn("Failed to render text:", textEl.text);
+                }
+              });
+            });
+
+            // Reset text color
+            pdf.setTextColor(0);
 
             const links = collectLinks(
               element,
@@ -490,7 +719,7 @@ export const generatePDFFromElement = async (
         remainingHeight -= pageContentHeight;
         await processNextChunk();
         resolve();
-      }, 0); // Use a 0ms timeout to allow browser to handle UI events
+      }, 0);
     });
 
   await processNextChunk();
