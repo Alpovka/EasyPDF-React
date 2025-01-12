@@ -1,20 +1,21 @@
 {
   "name": "@easypdf/react",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Free and open source React library for generating beautiful PDFs from React components",
   "author": "Alperen KARAVELIOGLU",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alpovka/easypdf.git"
+    "url": "https://github.com/Alpovka/EasyPDF-React"
   },
   "keywords": [
     "react",
     "pdf",
-    "generator",
+    "jsPDF",
     "typescript",
-    "free",
-    "open-source"
+    "html-to-pdf",
+    "react-pdf",
+    "html2canvas"
   ],
   "bugs": {
     "url": "https://github.com/Alpovka/EasyPDF-React/issues"
@@ -23,15 +24,18 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "main": "dist/easypdf.umd.js",
+  "module": "dist/easypdf.es.js",
   "types": "dist/index.d.ts",
   "files": [
+    "dist",
+    "logo.svg",
+    "LICENSE",
     "dist"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "dev": "vite build --watch",
     "preview": "vite preview",
     "prepublishOnly": "npm run build"
   },
