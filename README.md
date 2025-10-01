@@ -82,18 +82,6 @@ function PDFGenerator() {
 
 Visit our [documentation](https://easypdf.vercel.app/docs) for detailed guides and examples.
 
-## Examples
-
-- [Basic Usage](https://easypdf.vercel.app/docs/examples/basic-usage)
-- [Visual Mode](https://easypdf.vercel.app/docs/examples/visual-mode)
-- [Programmatic Mode](https://easypdf.vercel.app/docs/examples/programmatic-mode)
-- [Custom Styling](https://easypdf.vercel.app/docs/examples/styling)
-- [Headers and Footers](https://easypdf.vercel.app/docs/examples/headers-footers)
-- [Watermarks](https://easypdf.vercel.app/docs/examples/watermarks)
-- [Page Breaking](https://easypdf.vercel.app/docs/examples/page-breaking)
-- [Tables](https://easypdf.vercel.app/docs/examples/tables)
-- [Images](https://easypdf.vercel.app/docs/examples/images)
-
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
