@@ -18,6 +18,10 @@
   </a>
 </div>
 
+<div align="center">
+    <a href="https://easypdf.vercel.app/demo">Demo</a>
+</div>
+
 ## Features
 
 - 🎨 **Visual Mode**: Design PDFs using React components with real-time preview
@@ -81,10 +85,6 @@ function PDFGenerator() {
 ## Documentation
 
 Visit our [documentation](https://easypdf.vercel.app/docs) for detailed guides and examples.
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ## License
 
