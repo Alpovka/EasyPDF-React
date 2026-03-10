@@ -22,11 +22,14 @@ export default defineConfig({
       fileName: (format) => `easypdf.${format}.js`,
     },
     rollupOptions: {
-      external: ["react", "react-dom"],
+      external: [/^react/, /^react-dom/],
       output: {
         globals: {
           react: "React",
           "react-dom": "ReactDOM",
+          "react-dom/client": "ReactDOM",
+          "react/jsx-runtime": "jsxRuntime",
+          "react/jsx-dev-runtime": "jsxDevRuntime",
         },
       },
     },

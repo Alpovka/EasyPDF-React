@@ -1,16 +1,15 @@
 # EasyPdf React
 
 <div align="center">
-  <img src="logo.svg" alt="EasyPdf Logo" width="200" />
-  <h1>EasyPdf React</h1>
-  <p><strong>Free and open source React library for generating beautiful PDFs from React components</strong></p>
+  <img src="logo.svg" alt="EasyPdf Logo" width="120" />
+  <h3>Free, open-source React library for generating PDFs from React components</h3>
 </div>
 
 <div align="center">
   <a href="https://www.npmjs.com/package/@easypdf/react">
     <img src="https://img.shields.io/npm/v/@easypdf/react.svg" alt="npm version" />
   </a>
-  <a href="https://github.com/alpovka/easypdf/blob/main/LICENSE">
+  <a href="https://github.com/Alpovka/EasyPDF-React/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
   </a>
   <a href="https://www.npmjs.com/package/@easypdf/react">
@@ -19,86 +18,146 @@
 </div>
 
 <div align="center">
-    <a href="https://easypdf.vercel.app/demo">Demo</a>
+  <a href="https://easypdf.vercel.app/demo/">Demo</a> ·
+  <a href="https://easypdf.vercel.app/docs/">Documentation</a>
 </div>
+
+---
 
 ## Features
 
-- 🎨 **Visual Mode**: Design PDFs using React components with real-time preview
-- 🚀 **Programmatic Mode**: Generate PDFs dynamically with programmatic content creation
-- 📝 **Rich Text Support**: Full support for text formatting, lists, tables, and more
-- 🖼️ **Image Support**: Include images in your PDFs with automatic optimization
-- 🎯 **Page Breaking**: Smart page breaking algorithm for optimal content flow
-- 💅 **Styling**: Full CSS support including flexbox and grid layouts
-- 🎭 **Themes**: Built-in themes and support for custom themes
-- 📏 **Headers & Footers**: Customizable headers and footers
-- 💧 **Watermarks**: Add text or image watermarks
-- 📱 **Responsive**: Adapts to different page sizes and orientations
-- ⚡️ **Non-Blocking**: Smooth PDF generation that doesn't freeze the browser UI
+- **Visual Mode** — attach a ref to any element and download it as a PDF
+- **Programmatic Mode** — pass JSX to `createPDF` / `createPDFBlob` without rendering to screen
+- **Headers & Footers** — text drawn on every page, with `{pageNumber}` / `{totalPages}` variables
+- **Watermarks** — diagonal text stamped across every page
+- **Smart Page Breaking** — tables, images, lists, and `.no-break` elements are never split
+- **Full CSS Support** — inline styles, CSS classes, Tailwind, MUI, custom fonts — whatever the browser renders
+- **SSR Safe** — no browser globals at import time; PDF generation is browser-only and guarded
+- **React 18 & 19** — works with both versions
 
 ## Installation
 
 ```bash
 npm install @easypdf/react
-# or
-yarn add @easypdf/react
 ```
 
-## Quick Start
+## Visual Mode
 
-```tsx
-import { EasyPdfProvider, EasyPdf } from "@easypdf/react";
-
-// Initialize EasyPdf
-const easyPdf = EasyPdf.initialize();
-
-function App() {
-  return (
-    <EasyPdfProvider instance={easyPdf}>
-      <YourApp />
-    </EasyPdfProvider>
-  );
-}
-```
-
-## Basic Usage
+Attach `pdfRef` to any element and call `downloadPDF`:
 
 ```tsx
 import { useEasyPdf } from "@easypdf/react";
 
 function PDFGenerator() {
-  const { pdfRef, downloadPDF } = useEasyPdf();
+  const { pdfRef, downloadPDF, isLoading } = useEasyPdf();
 
   return (
     <div>
-      <button onClick={() => downloadPDF(pdfRef)}>Download PDF</button>
+      <button onClick={() => downloadPDF(pdfRef, { filename: "document.pdf" })} disabled={isLoading}>
+        {isLoading ? "Generating..." : "Download PDF"}
+      </button>
 
       <div ref={pdfRef}>
         <h1>Hello, PDF!</h1>
-        <p>This content will be converted to PDF.</p>
+        <p>This content will be captured as a PDF.</p>
       </div>
     </div>
   );
 }
 ```
 
+## Programmatic Mode
+
+Generate a PDF from JSX without rendering it to the screen:
+
+```tsx
+import { useEasyPdf } from "@easypdf/react";
+
+function InvoiceExporter({ data }) {
+  const { createPDF, isLoading } = useEasyPdf();
+
+  const handleExport = () =>
+    createPDF(
+      <div style={{ padding: "32px", fontFamily: "Arial, sans-serif" }}>
+        <h1>Invoice #{data.id}</h1>
+        <p>Amount: ${data.total}</p>
+      </div>,
+      { filename: `invoice-${data.id}.pdf` }
+    );
+
+  return (
+    <button onClick={handleExport} disabled={isLoading}>
+      {isLoading ? "Generating..." : "Export Invoice"}
+    </button>
+  );
+}
+```
+
+## Configuration
+
+All options are optional. Pass config to `useEasyPdf()` for hook-level defaults or directly to each method call.
+
+```tsx
+const { pdfRef, downloadPDF } = useEasyPdf({
+  pageSize: "A4",                           // "A4" | "A3" | "LETTER" | "LEGAL" | { width, height }
+  margins: { top: 20, right: 20, bottom: 20, left: 20 }, // mm
+  scale: 2,                                 // canvas resolution multiplier
+  filename: "document.pdf",
+  styles: {
+    backgroundColor: "#ffffff",
+    defaultFontFamily: "Arial, sans-serif",
+    defaultFontSize: 13,
+    defaultTextColor: "#333333",
+    customCSS: ".highlight { background: #fef9c3; }",
+  },
+  container: {
+    style: { width: "800px", margin: "0 auto" },
+  },
+  header: {
+    text: "My Company — Report",
+    fontSize: 10,
+    fontColor: "#666666",
+    align: "center",         // "left" | "center" | "right"
+    marginTop: 10,
+  },
+  footer: {
+    text: "Page {pageNumber} of {totalPages}",
+    fontSize: 10,
+    align: "center",
+    marginBottom: 10,
+  },
+  watermark: {
+    text: "CONFIDENTIAL",
+    fontSize: 60,
+    color: "#888888",
+    opacity: 0.15,           // 0–1
+    angle: -45,              // degrees
+  },
+  metadata: {
+    title: "Q1 Report",
+    author: "Finance Team",
+    subject: "Quarterly summary",
+    keywords: ["finance", "Q1"],
+  },
+});
+```
+
+## Hook Return Values
+
+| Name            | Type                                                                              | Description                                  |
+| --------------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
+| `pdfRef`        | `RefObject<HTMLDivElement>`                                                       | Attach to the element to capture             |
+| `downloadPDF`   | `(source: RefObject \| Blob \| string \| null, config?) => Promise<void>`         | Capture ref or download a Blob               |
+| `createPDF`     | `(content: ReactNode, config?) => Promise<void>`                                  | Render JSX off-screen and download           |
+| `createPDFBlob` | `(content: ReactNode, config?) => Promise<Blob>`                                  | Render JSX off-screen and return a Blob      |
+| `viewPDF`       | `(content: ReactNode \| Blob, config?) => Promise<void>`                          | Open PDF in a new browser tab                |
+| `isLoading`     | `boolean`                                                                         | `true` while any PDF operation is running    |
+| `error`         | `Error \| null`                                                                   | Error from the last failed operation         |
+
 ## Documentation
 
-Visit our [documentation](https://easypdf.vercel.app/docs) for detailed guides and examples.
+Full docs at **[easypdf.vercel.app/docs/](https://easypdf.vercel.app/docs/)**
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- 📚 [Documentation](https://easypdf.vercel.app/docs)
-- 🐛 [Issues](https://github.com/alpovka/easypdf/issues)
-
-## Author
-
-- Alperen Karavelioğlu ([@alpovka](https://github.com/alpovka))
-
-## Acknowledgments
-
-Special thanks to all our contributors and the open source community.
+MIT © [Alperen Karavelioğlu](https://github.com/Alpovka)

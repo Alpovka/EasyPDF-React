@@ -1,58 +1,49 @@
 import React, { useCallback, useRef, useState } from "react";
 import { PDFConfig } from "./types/config";
-import { useEasyPdfContext } from "./EasyPdfProvider";
+import { defaultConfig } from "./types/defaultConfig";
 import {
   createTempElement,
   renderContent,
   applyStyles,
   generatePDFFromElement,
+  mergeConfigs,
 } from "./utils/pdfUtils";
 
 export const useEasyPdf = (initialConfig?: PDFConfig) => {
-  const { instance } = useEasyPdfContext();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [isCreatingBlob, setIsCreatingBlob] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  const getConfig = useCallback(
+    (config?: PDFConfig) => mergeConfigs(defaultConfig, initialConfig, config),
+    [initialConfig]
+  );
 
   const downloadPDF = useCallback(
     async (
       refOrBlob: React.RefObject<HTMLDivElement> | Blob | string | null,
       config?: PDFConfig
     ) => {
-      const mergedConfig = {
-        ...instance.getConfig(),
-        ...initialConfig,
-        ...config,
-      };
+      if (typeof window === "undefined") {
+        throw new Error("[easypdf] downloadPDF requires a browser environment.");
+      }
+      const mergedConfig = getConfig(config);
       try {
-        setIsDownloadingPDF(true);
+        setIsLoading(true);
         setError(null);
-        if (!refOrBlob) {
-          throw new Error("PDF reference or blob not found");
-        }
+
+        if (!refOrBlob) throw new Error("PDF reference or blob not found");
 
         let blob: Blob;
         if (refOrBlob instanceof Blob) {
           blob = refOrBlob;
         } else if (typeof refOrBlob === "string") {
           mergedConfig.filename = refOrBlob;
-          if (!containerRef.current) {
-            throw new Error("PDF container not found");
-          }
-          const pdf = await generatePDFFromElement(
-            containerRef.current,
-            mergedConfig
-          );
-          blob = pdf.output("blob");
+          if (!pdfRef.current) throw new Error("PDF container not found");
+          blob = (await generatePDFFromElement(pdfRef.current, mergedConfig)).output("blob");
         } else {
-          const element = refOrBlob?.current;
-          if (!element) {
-            throw new Error("PDF container not found");
-          }
-          const pdf = await generatePDFFromElement(element, mergedConfig);
-          blob = pdf.output("blob");
+          if (!refOrBlob.current) throw new Error("PDF container not found");
+          blob = (await generatePDFFromElement(refOrBlob.current, mergedConfig)).output("blob");
         }
 
         const url = URL.createObjectURL(blob);
@@ -64,109 +55,88 @@ export const useEasyPdf = (initialConfig?: PDFConfig) => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to generate PDF");
-        setError(error);
-        throw error;
+        const e = err instanceof Error ? err : new Error("Failed to generate PDF");
+        setError(e);
+        throw e;
       } finally {
-        setIsDownloadingPDF(false);
+        setIsLoading(false);
       }
     },
-    [instance, initialConfig]
-  );
-
-  const createPDF = useCallback(
-    async (content: React.ReactNode, config?: PDFConfig) => {
-      const tempDiv = createTempElement();
-      try {
-        setIsGeneratingPDF(true);
-        setError(null);
-        await renderContent(tempDiv, content);
-        const mergedConfig = {
-          ...instance.getConfig(),
-          ...initialConfig,
-          ...config,
-        };
-        if (mergedConfig.styles) {
-          applyStyles(tempDiv, mergedConfig.styles);
-        }
-        const pdf = await generatePDFFromElement(tempDiv, mergedConfig);
-        pdf.save(config?.filename || "document.pdf");
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("PDF generation failed");
-        setError(error);
-        throw error;
-      } finally {
-        setIsGeneratingPDF(false);
-        document.body.removeChild(tempDiv);
-      }
-    },
-    [instance, initialConfig]
+    [getConfig, pdfRef]
   );
 
   const createPDFBlob = useCallback(
     async (content: React.ReactNode, config?: PDFConfig): Promise<Blob> => {
+      if (typeof window === "undefined") {
+        throw new Error("[easypdf] createPDFBlob requires a browser environment.");
+      }
       const tempDiv = createTempElement();
+      let root: Awaited<ReturnType<typeof renderContent>> | undefined;
       try {
-        setIsCreatingBlob(true);
+        setIsLoading(true);
         setError(null);
-        await renderContent(tempDiv, content);
-        const mergedConfig = {
-          ...instance.getConfig(),
-          ...initialConfig,
-          ...config,
-        };
-        if (mergedConfig.styles) {
-          applyStyles(tempDiv, mergedConfig.styles);
-        }
-        const pdf = await generatePDFFromElement(tempDiv, mergedConfig);
-        return pdf.output("blob");
+        root = await renderContent(tempDiv, content);
+        const mergedConfig = getConfig(config);
+        if (mergedConfig.styles) applyStyles(tempDiv, mergedConfig.styles);
+        return (await generatePDFFromElement(tempDiv, mergedConfig)).output("blob");
       } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("PDF blob generation failed");
-        setError(error);
-        throw error;
+        const e = err instanceof Error ? err : new Error("Failed to generate PDF");
+        setError(e);
+        throw e;
       } finally {
-        setIsCreatingBlob(false);
+        setIsLoading(false);
+        root?.unmount();
         document.body.removeChild(tempDiv);
       }
     },
-    [instance, initialConfig]
+    [getConfig]
+  );
+
+  const createPDF = useCallback(
+    async (content: React.ReactNode, config?: PDFConfig) => {
+      if (typeof window === "undefined") {
+        throw new Error("[easypdf] createPDF requires a browser environment.");
+      }
+      const mergedConfig = getConfig(config);
+      const blob = await createPDFBlob(content, config);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = mergedConfig.filename || "document.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    },
+    [getConfig, createPDFBlob]
   );
 
   const viewPDF = useCallback(
     async (content: React.ReactNode | Blob, config?: PDFConfig) => {
+      if (typeof window === "undefined") {
+        throw new Error("[easypdf] viewPDF requires a browser environment.");
+      }
       try {
-        let blob: Blob;
-        if (content instanceof Blob) {
-          blob = content;
-        } else {
-          blob = await createPDFBlob(content, config);
-        }
+        const blob = content instanceof Blob ? content : await createPDFBlob(content, config);
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to view PDF");
-        setError(error);
-        throw error;
+        const e = err instanceof Error ? err : new Error("Failed to view PDF");
+        setError(e);
+        throw e;
       }
     },
     [createPDFBlob]
   );
 
   return {
-    containerRef,
-    pdfRef: containerRef,
+    pdfRef,
     downloadPDF,
     createPDF,
     createPDFBlob,
     viewPDF,
-    isDownloadingPDF,
-    isGeneratingPDF,
-    isCreatingBlob,
+    isLoading,
     error,
   };
 };

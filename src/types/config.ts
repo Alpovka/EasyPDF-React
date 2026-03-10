@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export type PageSize =
   | "A4"
   | "A3"
@@ -6,7 +8,6 @@ export type PageSize =
   | { width: number; height: number };
 
 export interface PDFConfig {
-  // Page Configuration
   pageSize?: PageSize;
   margins?: {
     top?: number;
@@ -15,8 +16,6 @@ export interface PDFConfig {
     left?: number;
   };
   filename?: string;
-
-  // Metadata
   metadata?: {
     title?: string;
     author?: string;
@@ -24,7 +23,6 @@ export interface PDFConfig {
     keywords?: string[];
     creator?: string;
   };
-
   watermark?: {
     text: string;
     fontSize?: number;
@@ -32,17 +30,7 @@ export interface PDFConfig {
     opacity?: number;
     angle?: number;
   };
-  fonts?: Array<{
-    family: string;
-    source: string;
-    weight?: string;
-    style?: string;
-  }>;
-
-  // Export Options
   scale?: number;
-
-  // Enhanced Styling
   styles?: {
     backgroundColor?: string;
     defaultFontSize?: number;
@@ -50,29 +38,26 @@ export interface PDFConfig {
     defaultTextColor?: string;
     customCSS?: string;
   };
-
-  // Header and Footer
   header?: {
     text: string | string[];
     fontSize?: number;
     fontColor?: string;
-    marginTop?: number | 0;
-    marginLeft?: number | 0;
-    marginRight?: number | 0;
+    marginTop?: number;
+    marginLeft?: number;
+    marginRight?: number;
     align?: "left" | "center" | "right";
   };
   footer?: {
     text: string | string[];
     fontSize?: number;
     fontColor?: string;
-    marginBottom?: number | 0;
-    marginLeft?: number | 0;
-    marginRight?: number | 0;
+    marginBottom?: number;
+    marginLeft?: number;
+    marginRight?: number;
     align?: "left" | "center" | "right";
   };
-
   container?: {
     className?: string;
-    style?: React.CSSProperties;
+    style?: CSSProperties;
   };
 }
